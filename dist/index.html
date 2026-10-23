@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="在浏览器里完成证件照尺寸转换、裁剪和下载，照片不上传。"
+    />
+    <title>证照裁剪台｜证件照尺寸转换</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="page-glow page-glow--one" aria-hidden="true"></div>
+    <div class="page-glow page-glow--two" aria-hidden="true"></div>
+
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="证照裁剪台首页">
+        <span class="brand-mark" aria-hidden="true">
+          <span></span><span></span><span></span><span></span>
+        </span>
+        <span>
+          <strong>证照裁剪台</strong>
+          <small>ID PHOTO STUDIO</small>
+        </span>
+      </a>
+      <div class="privacy-pill">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 3 5.5 5.6v5.7c0 4.2 2.7 8 6.5 9.4 3.8-1.4 6.5-5.2 6.5-9.4V5.6L12 3Zm3.1 7.2-3.7 4-2.2-2.1 1.1-1.1 1.1 1.1 2.6-2.9 1.1 1Z" />
+        </svg>
+        照片仅在本机处理
+      </div>
+    </header>
+
+    <main>
+      <section class="hero" aria-labelledby="page-title">
+        <div>
+          <p class="eyebrow">无需上传 · 即开即用</p>
+          <h1 id="page-title">证件照，裁得<br /><em>刚刚好。</em></h1>
+        </div>
+        <div class="hero-copy">
+          <p>拖入一张照片，选择目标尺寸。可以直接拖动人物、调整缩放，再导出精确像素与 DPI 信息。</p>
+          <div class="hero-tags" aria-label="主要功能">
+            <span>实时预览</span>
+            <span>精确毫米</span>
+            <span>原图不覆盖</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="studio" aria-label="证件照转换工作台">
+        <article class="preview-card">
+          <div class="panel-head">
+            <div>
+              <span class="step-index">01</span>
+              <span class="panel-kicker">构图预览</span>
+            </div>
+            <button id="replaceButton" class="text-button" type="button" hidden>
+              更换照片
+            </button>
+          </div>
+
+          <div id="dropZone" class="drop-zone">
+            <input id="fileInput" type="file" accept="image/jpeg,image/png,image/webp,image/bmp" hidden />
+            <div id="emptyState" class="empty-state">
+              <div class="upload-illustration" aria-hidden="true">
+                <div class="photo-outline">
+                  <span class="head"></span>
+                  <span class="shoulders"></span>
+                </div>
+                <div class="upload-badge">
+                  <svg viewBox="0 0 24 24"><path d="M12 4 6.5 9.5l1.4 1.4 3.1-3.1V17h2V7.8l3.1 3.1 1.4-1.4L12 4ZM5 19v-3h2v1h10v-1h2v3H5Z" /></svg>
+                </div>
+              </div>
+              <h2>把照片拖到这里</h2>
+              <p>支持 JPG、PNG、WebP、BMP，单张最大 30 MB</p>
+              <button id="chooseButton" class="primary-button primary-button--compact" type="button">
+                选择照片
+              </button>
+            </div>
+
+            <div id="canvasWrap" class="canvas-wrap" hidden>
+              <canvas id="previewCanvas" aria-label="照片裁剪预览"></canvas>
+              <div id="guideOverlay" class="guide-overlay" aria-hidden="true">
+                <span class="guide-line guide-line--v"></span>
+                <span class="guide-line guide-line--h1"></span>
+                <span class="guide-line guide-line--h2"></span>
+                <span class="face-guide"></span>
+              </div>
+              <div class="drag-hint">拖动照片调整位置</div>
+            </div>
+          </div>
+
+          <div class="preview-footer">
+            <div class="file-meta">
+              <span id="fileName">等待选择照片</span>
+              <small id="sourceMeta">—</small>
+            </div>
+            <label class="switch-row">
+              <input id="guideToggle" type="checkbox" checked />
+              <span class="switch" aria-hidden="true"></span>
+              构图参考线
+            </label>
+          </div>
+        </article>
+
+        <aside class="settings-card">
+          <div class="panel-head">
+            <div>
+              <span class="step-index">02</span>
+              <span class="panel-kicker">输出设置</span>
+            </div>
+            <span id="readyBadge" class="ready-badge">等待照片</span>
+          </div>
+
+          <div class="setting-section">
+            <div class="setting-title">
+              <label for="presetSelect">目标尺寸</label>
+              <span>常用规格</span>
+            </div>
+            <select id="presetSelect" class="select-control">
+              <option value="22,32">小一寸 · 22 × 32 mm</option>
+              <option value="25,35">一寸 · 25 × 35 mm</option>
+              <option value="33,48">大一寸 · 33 × 48 mm</option>
+              <option value="35,45" selected>小二寸 · 35 × 45 mm</option>
+              <option value="35,49">二寸 · 35 × 49 mm</option>
+              <option value="35,53">大二寸 · 35 × 53 mm</option>
+              <option value="26,32">身份证参考 · 26 × 32 mm</option>
+              <option value="custom">自定义尺寸</option>
+            </select>
+
+            <div class="size-row">
+              <label>
+                <span>宽度</span>
+                <span class="input-with-unit">
+                  <input id="widthInput" type="number" min="5" max="300" step="0.1" value="35" disabled />
+                  <b>mm</b>
+                </span>
+              </label>
+              <span class="multiply" aria-hidden="true">×</span>
+              <label>
+                <span>高度</span>
+                <span class="input-with-unit">
+                  <input id="heightInput" type="number" min="5" max="300" step="0.1" value="45" disabled />
+                  <b>mm</b>
+                </span>
+              </label>
+            </div>
+
+            <div class="dpi-row">
+              <span>DPI</span>
+              <div class="segmented" role="group" aria-label="输出 DPI">
+                <button type="button" data-dpi="150">150</button>
+                <button type="button" data-dpi="300" class="active">300</button>
+                <button type="button" data-dpi="600">600</button>
+              </div>
+            </div>
+
+            <div class="output-metric">
+              <span>最终输出</span>
+              <strong id="pixelOutput">413 × 531 px</strong>
+            </div>
+          </div>
+
+          <div class="setting-section">
+            <div class="setting-title">
+              <span>画面适配</span>
+              <span id="qualityHint">选择照片后检测清晰度</span>
+            </div>
+            <div class="fit-options" role="group" aria-label="画面适配方式">
+              <button class="fit-option active" type="button" data-mode="cover">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5v2H6v3H4Zm11-5h5v5h-2V6h-3V4ZM6 15v3h3v2H4v-5h2Zm12 0h2v5h-5v-2h3v-3ZM8 8h8v8H8V8Z" /></svg>
+                <span><b>填满裁剪</b><small>保持人物比例</small></span>
+              </button>
+              <button class="fit-option" type="button" data-mode="contain">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v16H4V4Zm2 2v12h12V6H6Zm2 3h8v6H8V9Z" /></svg>
+                <span><b>完整保留</b><small>不足处自动补色</small></span>
+              </button>
+            </div>
+
+            <div id="cropControls" class="crop-controls">
+              <label class="range-row">
+                <span><b>缩放</b><output id="zoomValue">100%</output></span>
+                <input id="zoomRange" type="range" min="100" max="250" value="100" />
+              </label>
+              <label class="range-row">
+                <span><b>上下位置</b><output id="verticalValue">居中</output></span>
+                <input id="verticalRange" type="range" min="-100" max="100" value="0" />
+              </label>
+            </div>
+
+            <div id="backgroundControls" class="background-controls" hidden>
+              <span>补边颜色</span>
+              <div class="color-options" role="group" aria-label="补边颜色">
+                <button type="button" class="color-dot active" data-color="#ffffff" style="--dot:#ffffff" aria-label="白色"></button>
+                <button type="button" class="color-dot" data-color="#e8eef5" style="--dot:#e8eef5" aria-label="浅灰色"></button>
+                <button type="button" class="color-dot" data-color="#4a8fe7" style="--dot:#4a8fe7" aria-label="蓝色"></button>
+                <button type="button" class="color-dot" data-color="#d94c4c" style="--dot:#d94c4c" aria-label="红色"></button>
+              </div>
+            </div>
+          </div>
+
+          <div class="setting-section setting-section--last">
+            <div class="format-row">
+              <label for="formatSelect">文件格式</label>
+              <select id="formatSelect" class="mini-select">
+                <option value="image/jpeg">JPG · 适合提交</option>
+                <option value="image/png">PNG · 无损画质</option>
+              </select>
+            </div>
+            <label id="qualityControl" class="range-row range-row--quality">
+              <span><b>JPG 质量</b><output id="jpegQualityValue">95%</output></span>
+              <input id="jpegQuality" type="range" min="70" max="100" value="95" />
+            </label>
+          </div>
+
+          <button id="downloadButton" class="download-button" type="button" disabled>
+            <span>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 4h2v9.2l3.1-3.1 1.4 1.4-5.5 5.5-5.5-5.5 1.4-1.4 3.1 3.1V4ZM5 18h14v2H5v-2Z" /></svg>
+              下载转换后的照片
+            </span>
+            <small id="downloadMeta">JPG · 300 DPI</small>
+          </button>
+          <p class="disclaimer">预设尺寸为常见口径，提交前请以办证机构要求为准。</p>
+        </aside>
+      </section>
+    </main>
+
+    <footer>
+      <span>照片不会离开你的浏览器</span>
+      <span>·</span>
+      <span>© 2026 证照裁剪台</span>
+    </footer>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <script src="./app.js"></script>
+  </body>
+</html>
